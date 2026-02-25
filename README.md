@@ -31,4 +31,4 @@ Built from the ground up as a standalone alternative to bulky Discord bridge plu
 The `config.yml` file allows you to customize the bot token, channel bindings, and format strings for every type of message (chat, joins, quits, server startup, and server shutdown).
 
 ## 📄 License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the GNU General Public License v3.0 (GPLv3). See the `LICENSE` file for details. This explicitly prevents anyone from distributing closed-source or commercial forks of your plugin without your permission!
