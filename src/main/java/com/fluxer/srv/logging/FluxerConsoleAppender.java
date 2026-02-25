@@ -18,7 +18,7 @@ public class FluxerConsoleAppender extends AbstractAppender {
 
     public FluxerConsoleAppender(FluxerSRV plugin) {
         super("FluxerConsoleAppender", null,
-                PatternLayout.newBuilder().withPattern("[%d{HH:mm:ss} %level]: %msg").build(), false, null);
+                PatternLayout.newBuilder().withPattern("[%d{HH:mm:ss} %level]: %msg").build(), false);
         this.plugin = plugin;
     }
 

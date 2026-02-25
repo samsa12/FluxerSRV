@@ -38,7 +38,7 @@ public class FluxerRestApi {
     private void post(String route, JsonObject body, boolean authorize) throws IOException {
         Request.Builder builder = new Request.Builder()
                 .url(BASE_URL + route)
-                .post(RequestBody.create(body.toString(), MediaType.get("application/json")));
+                .post(RequestBody.create(MediaType.parse("application/json"), body.toString()));
 
         if (authorize) {
             builder.header("Authorization", "Bot " + token);

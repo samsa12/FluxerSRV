@@ -1,7 +1,6 @@
 name: FluxerSRV
 version: '${version}'
 main: com.fluxer.srv.FluxerSRV
-api-version: '1.20'
 description: A custom, lightweight plugin to bridge Minecraft and Fluxer.
 author: Oisann
 
