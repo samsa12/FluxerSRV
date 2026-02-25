@@ -14,5 +14,5 @@ formats:
   join: "**%player_name%** joined the server!"
   quit: "**%player_name%** left the server!"
   death: "**%death_message%**"
-  serverStart: "🟩 **Server Started**"
-  serverStop: "🟥 **Server Stopped**"
+  serverStart: "**Server Started**"
+  serverStop: "**Server Stopped**"

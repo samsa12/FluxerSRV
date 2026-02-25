@@ -17,9 +17,53 @@ public class FluxerConsoleAppender extends AbstractAppender {
     private int taskId = -1;
 
     public FluxerConsoleAppender(FluxerSRV plugin) {
-        super("FluxerConsoleAppender", null,
-                PatternLayout.newBuilder().withPattern("[%d{HH:mm:ss} %level]: %msg").build(), false);
+        super("FluxerConsoleAppender", null, createFlexiblePatternLayout(), false);
         this.plugin = plugin;
+    }
+
+    private static org.apache.logging.log4j.core.layout.PatternLayout createFlexiblePatternLayout() {
+        try {
+            // Try Log4j 2.14+ (Minecraft 1.17+)
+            try {
+                java.lang.reflect.Method newBuilder = PatternLayout.class.getMethod("newBuilder");
+                Object builder = newBuilder.invoke(null);
+                java.lang.reflect.Method withPattern = builder.getClass().getMethod("withPattern", String.class);
+                withPattern.invoke(builder, "[%d{HH:mm:ss} %level]: %msg");
+                java.lang.reflect.Method build = builder.getClass().getMethod("build");
+                return (PatternLayout) build.invoke(builder);
+            } catch (Exception ignored) {
+            }
+
+            // Try Log4j 2.8.1 (Minecraft 1.8.8 - 1.11)
+            try {
+                java.lang.reflect.Method create = PatternLayout.class.getMethod("createLayout",
+                        String.class, Class.forName("org.apache.logging.log4j.core.layout.PatternSelector"),
+                        Class.forName("org.apache.logging.log4j.core.config.Configuration"),
+                        Class.forName("org.apache.logging.log4j.core.pattern.RegexReplacement"),
+                        java.nio.charset.Charset.class,
+                        boolean.class, boolean.class, String.class, String.class);
+                return (PatternLayout) create.invoke(null, "[%d{HH:mm:ss} %level]: %msg", null, null, null, null, false,
+                        false, null, null);
+            } catch (Exception ignored) {
+            }
+
+            // Try Log4j 2.0-beta9 (Minecraft 1.7.10)
+            try {
+                java.lang.reflect.Method create = PatternLayout.class.getMethod("createLayout",
+                        String.class, Class.forName("org.apache.logging.log4j.core.config.Configuration"),
+                        Class.forName("org.apache.logging.log4j.core.pattern.RegexReplacement"), String.class,
+                        String.class);
+                return (PatternLayout) create.invoke(null, "[%d{HH:mm:ss} %level]: %msg", null, null, null, null);
+            } catch (Exception ignored) {
+            }
+
+            // Fallback (older 2.x versions)
+            java.lang.reflect.Method createDefault = PatternLayout.class.getMethod("createDefaultLayout");
+            return (PatternLayout) createDefault.invoke(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
