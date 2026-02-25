@@ -1,0 +1,18 @@
+# FluxerSRV Configuration File
+
+# Bot Token from Fluxer
+botToken: "Bot Token_Here"
+
+# Channel mappings
+channels:
+  global: "000000000000000000"
+  console: "000000000000000000"
+
+# Formats
+formats:
+  chat: "**%player_name%**: %message%"
+  join: "**%player_name%** joined the server!"
+  quit: "**%player_name%** left the server!"
+  death: "**%death_message%**"
+  serverStart: "🟩 **Server Started**"
+  serverStop: "🟥 **Server Stopped**"
