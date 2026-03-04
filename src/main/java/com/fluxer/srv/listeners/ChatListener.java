@@ -14,17 +14,25 @@ public class ChatListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         String mainChannelId = plugin.getMainChannelId();
         if (mainChannelId == null || mainChannelId.isEmpty() || mainChannelId.equals("000000000000000000")) {
             return;
         }
 
+        String rawMessage = event.getMessage();
+        if (plugin.getConfig().getBoolean("fluxer-global-only", true)) {
+            if (!rawMessage.startsWith("!")) {
+                return; // Local chat, DO NOT SEND to Fluxer
+            }
+            rawMessage = rawMessage.substring(1).trim(); // Remove '!' for Discord
+        }
+
         String format = plugin.getConfig().getString("formats.chat", "**%player_name%**: %message%");
         String message = format
                 .replace("%player_name%", event.getPlayer().getName())
-                .replace("%message%", event.getMessage());
+                .replace("%message%", rawMessage);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {

@@ -32,10 +32,27 @@ public class FluxerSRV extends JavaPlugin {
         httpClient = new OkHttpClient();
         fluxerClient = new FluxerClient(token, getLogger(), httpClient);
 
+        // Update Checker logic
+        if (getConfig().getBoolean("check-updates", true)) {
+            // Using a placeholder Resource ID (e.g. 100000). The user can adjust if it
+            // corresponds to an actual Spigot plugin ID.
+            int spigotResourceId = 100000;
+            new com.fluxer.srv.utils.UpdateChecker(this, spigotResourceId).getVersion(latestVersion -> {
+                String currentVersion = this.getDescription().getVersion();
+                if (!currentVersion.equalsIgnoreCase(latestVersion)) {
+                    getLogger().warning("========================================");
+                    getLogger().warning("A new version of FluxerSRV is available!");
+                    getLogger().warning("Current: v" + currentVersion + " | Latest: v" + latestVersion);
+                    getLogger().warning("========================================");
+                }
+            });
+        }
+
         // Register listeners and command executors
         getServer().getPluginManager().registerEvents(new com.fluxer.srv.listeners.ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new com.fluxer.srv.listeners.JoinQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new com.fluxer.srv.listeners.DeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new com.fluxer.srv.listeners.AdvancementListener(this), this);
 
         try {
             fluxerClient.setListener(new com.fluxer.srv.listeners.FluxerMessageListener(this));

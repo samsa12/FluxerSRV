@@ -16,3 +16,7 @@ formats:
   death: "**%death_message%**"
   serverStart: "**Server Started**"
   serverStop: "**Server Stopped**"
+
+# Feature toggles
+check-updates: true
+fluxer-global-only: true
