@@ -34,16 +34,15 @@ public class FluxerSRV extends JavaPlugin {
 
         // Update Checker logic
         if (getConfig().getBoolean("check-updates", true)) {
-            // Using a placeholder Resource ID (e.g. 100000). The user can adjust if it
-            // corresponds to an actual Spigot plugin ID.
-            int spigotResourceId = 100000;
-            new com.fluxer.srv.utils.UpdateChecker(this, spigotResourceId).getVersion(latestVersion -> {
-                String currentVersion = this.getDescription().getVersion();
-                if (!currentVersion.equalsIgnoreCase(latestVersion)) {
-                    getLogger().warning("========================================");
-                    getLogger().warning("A new version of FluxerSRV is available!");
-                    getLogger().warning("Current: v" + currentVersion + " | Latest: v" + latestVersion);
-                    getLogger().warning("========================================");
+
+            new com.fluxer.srv.utils.UpdateChecker(this, "samsa12", "FluxerSRV").getVersion(latestVersion -> {
+                String currentVersion = getDescription().getVersion();
+
+                if (com.fluxer.srv.utils.VersionUtils.isOutdated(currentVersion, latestVersion)) {
+                    getLogger().warning("A new update is available: " + latestVersion);
+                    getLogger().warning("Current version: " + currentVersion);
+                } else {
+                    getLogger().info("You are using the latest version.");
                 }
             });
         }
