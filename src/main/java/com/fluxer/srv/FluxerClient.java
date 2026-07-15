@@ -19,6 +19,9 @@ public class FluxerClient {
     private int sequence = 0;
     private String sessionId;
     private Timer heartbeatTimer;
+    private volatile Timer reconnectTimer;
+    private volatile int reconnectAttempts = 0;
+    private volatile boolean shuttingDown = false;
     private FluxerListener listener;
     private final Logger logger;
 
@@ -33,6 +36,7 @@ public class FluxerClient {
     }
 
     public void connect() throws Exception {
+        if (shuttingDown) return;
         ws = new WebSocketFactory()
                 .setConnectionTimeout(5000)
                 .createSocket(GATEWAY_URL)
@@ -45,8 +49,11 @@ public class FluxerClient {
                     @Override
                     public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame,
                             WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
-                        logger.warning("[Fluxer] Disconnected from gateway. Attempting to reconnect...");
+                        logger.warning("[Fluxer] Disconnected from gateway.");
                         stopHeartbeat();
+                        if (!shuttingDown) {
+                            scheduleReconnect();
+                        }
                     }
 
                     @Override
@@ -55,6 +62,30 @@ public class FluxerClient {
                     }
                 })
                 .connect();
+
+        reconnectAttempts = 0;
+    }
+
+    private void scheduleReconnect() {
+        if (reconnectTimer != null) {
+            reconnectTimer.cancel();
+        }
+        reconnectTimer = new Timer(true);
+        long delay = Math.min(30000L, (long) Math.pow(2, Math.min(reconnectAttempts, 6)) * 1000L);
+        logger.info("[Fluxer] Attempting to reconnect in " + (delay / 1000) + " seconds...");
+
+        reconnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    reconnectAttempts++;
+                    connect();
+                } catch (Exception e) {
+                    logger.severe("[Fluxer] Reconnection failed: " + e.getMessage());
+                    scheduleReconnect();
+                }
+            }
+        }, delay);
     }
 
     private void handleMessage(String text) {
@@ -138,7 +169,11 @@ public class FluxerClient {
     }
 
     public void shutdown() {
+        shuttingDown = true;
         stopHeartbeat();
+        if (reconnectTimer != null) {
+            reconnectTimer.cancel();
+        }
         if (ws != null) {
             ws.disconnect();
         }

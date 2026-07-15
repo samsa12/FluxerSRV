@@ -44,11 +44,41 @@ public class FluxerRestApi {
             builder.header("Authorization", "Bot " + token);
         }
 
-        try (Response response = httpClient.newCall(builder.build()).execute()) {
-            if (!response.isSuccessful()) {
+        int maxRetries = 3;
+        int retries = 0;
+
+        while (retries < maxRetries) {
+            try (Response response = httpClient.newCall(builder.build()).execute()) {
+                if (response.isSuccessful()) {
+                    return;
+                }
+
+                if (response.code() == 429) { // Too Many Requests
+                    String retryAfterHeader = response.header("Retry-After");
+                    long delayMillis = 1000; // Default delay
+                    if (retryAfterHeader != null) {
+                        try {
+                            // Retry-After might be in seconds or a date. Assume seconds for now.
+                            delayMillis = (long) (Double.parseDouble(retryAfterHeader) * 1000);
+                        } catch (NumberFormatException ignored) {}
+                    }
+
+                    try {
+                        Thread.sleep(delayMillis);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("Interrupted while waiting for rate limit", e);
+                    }
+
+                    retries++;
+                    continue;
+                }
+
                 String errorBody = response.body() != null ? response.body().string() : "null";
                 throw new IOException("Unexpected code " + response + " | Body: " + errorBody);
             }
         }
+
+        throw new IOException("Failed after " + maxRetries + " retries due to rate limiting.");
     }
 }

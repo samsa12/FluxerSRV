@@ -103,13 +103,15 @@ public class FluxerConsoleAppender extends AbstractAppender {
 
             final String payload = sb.toString();
 
-            new Thread(() -> {
-                try {
-                    plugin.getFluxerClient().getRestApi().sendMessage(consoleChannelId, payload);
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Failed to send console logs to Fluxer: " + e.getMessage());
-                }
-            }).start();
+            if (plugin.isEnabled()) {
+                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                    try {
+                        plugin.getFluxerClient().getRestApi().sendMessage(consoleChannelId, payload);
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to send console logs to Fluxer: " + e.getMessage());
+                    }
+                });
+            }
 
         }, 20L * 5, 20L * 5); // Run every 5 seconds
     }
