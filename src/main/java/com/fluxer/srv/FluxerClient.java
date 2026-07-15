@@ -19,9 +19,9 @@ public class FluxerClient {
     private int sequence = 0;
     private String sessionId;
     private Timer heartbeatTimer;
-    private Timer reconnectTimer;
-    private int reconnectAttempts = 0;
-    private boolean shuttingDown = false;
+    private volatile Timer reconnectTimer;
+    private volatile int reconnectAttempts = 0;
+    private volatile boolean shuttingDown = false;
     private FluxerListener listener;
     private final Logger logger;
 
@@ -71,7 +71,7 @@ public class FluxerClient {
             reconnectTimer.cancel();
         }
         reconnectTimer = new Timer(true);
-        long delay = Math.min(30000, (long) Math.pow(2, reconnectAttempts) * 1000);
+        long delay = Math.min(30000L, (long) Math.pow(2, Math.min(reconnectAttempts, 6)) * 1000L);
         logger.info("[Fluxer] Attempting to reconnect in " + (delay / 1000) + " seconds...");
 
         reconnectTimer.schedule(new TimerTask() {
